@@ -9,6 +9,7 @@ win = tk.Tk()
 win.withdraw()
 import pygame as pg
 from pygame._sdl2.video import Window
+from PIL import Image, ImageOps
 
 from pygame.locals import (
     K_LEFT,
@@ -27,17 +28,21 @@ def select_image():
     # filepath = filedialog.askopenfile(initialdir=".", title="select image", filetypes=(("all files", "*.*"),("all files", "*.*")))
     folder = os.path.dirname(filename)
     with open(filename, "rb") as image_file:
-        image = pg.image.load(filename)
-        # image = tk.PhotoImage(image_file)
-    return filename, image, folder
+        # image = pg.image.load(filename)
+        raw_image = Image.open(image_file)
+        image = ImageOps.exif_transpose(raw_image)
+        surface = pg.image.fromstring(image.tobytes(), image.size, image.mode)
+    return filename, surface, folder
 
 def scale_image(image, w, h):
+    # image = ImageOps.exif_transpose(image)
+    #surface = pg.image.fromstring(image.tobytes(), image.size, image.mode)
     iw, ih = image.get_width(), image.get_height()
     scale = min(w/iw, h/ih)
     new_size = (int(iw*scale), int(ih*scale))
     return pg.transform.scale(image, new_size)
 
-image_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.webp', '.heic']
+image_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.webp'] #, '.heic']
 
 def sort_analyse(folder, image_name):
     files = os.listdir(folder)
@@ -58,8 +63,11 @@ def sort_analyse(folder, image_name):
 
 def get_image(filename):
     with open(filename, "rb") as image_file:
-        image = pg.image.load(filename)
-    return image
+        # image = pg.image.load(filename)
+        raw_image = Image.open(image_file)
+        image = ImageOps.exif_transpose(raw_image)
+        surface = pg.image.fromstring(image.tobytes(), image.size, image.mode)
+    return surface
 
 
 def reset_advance_timer():
