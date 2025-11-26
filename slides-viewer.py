@@ -22,6 +22,7 @@ register_heif_opener()
 from pygame.locals import (
     K_LEFT,
     K_RIGHT,
+    K_SPACE,
 )
 
 file_list = []
@@ -130,6 +131,17 @@ TEXT_COLOUR = (255, 255, 210)
 def display_date_time(screen, date_time):
     FONT.render_to(screen, (10, 10), date_time, TEXT_COLOUR)
 
+
+def display_info(paused, index, param, folder):
+    x,y = 10, 40
+    FONT.render_to(screen, (x, y), f'Image {index+1}/{param}', TEXT_COLOUR)
+    y += 30
+    FONT.render_to(screen, (x, y), f'/{os.path.basename(folder)}', TEXT_COLOUR)
+    y += 30
+    if paused:
+        FONT.render_to(screen, (x, y), "Paused", TEXT_COLOUR)
+
+
 def main():
     # win = tk.Tk()
     # win.withdraw()
@@ -137,6 +149,7 @@ def main():
     running = True
     image = None
     index = None
+    paused = False
     clock = pg.time.Clock()
     while running:
         window = Window.from_display_module()
@@ -149,16 +162,24 @@ def main():
                 elif event.unicode == 'l':
                     image_name, image, folder = select_image()
                     file_list, index = sort_analyse(folder, image_name)
+                    paused = False
                     reset_advance_timer()
                 elif event.key == K_LEFT:
                     if index is not None:
                         index = (index - 1) % len(file_list)
                         image = get_image(file_list[index])
-                        reset_advance_timer()
+                        if not paused:
+                            reset_advance_timer()
                 elif event.key == K_RIGHT:
                     if index is not None:
                         index = (index + 1) % len(file_list)
                         image = get_image(file_list[index])
+                        if not paused:
+                            reset_advance_timer()
+                elif event.key == K_SPACE:
+                    paused = not paused
+                    pg.time.set_timer(ADVANCE_EVENT, 0)
+                    if not paused:
                         reset_advance_timer()
             elif event.type == ADVANCE_EVENT:
                 if index is not None:
@@ -171,6 +192,7 @@ def main():
         if image is not None:
             if index is not None:
                 display_date_time(screen, file_list[index][1])
+                display_info(paused, index, len(file_list), folder)
             scaled_image = scale_image(image, SMALL_WIDTH, SMALL_HEIGHT)
             image_rect = scaled_image.get_rect(center=(WIDTH // 2, HEIGHT // 2))
             screen.blit(scaled_image, image_rect)
