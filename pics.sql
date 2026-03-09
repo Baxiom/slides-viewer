@@ -1,6 +1,6 @@
 
 CREATE DATABASE pics;
-USE pets
+USE pics
 
 #One record for each image file
 CREATE TABLE files

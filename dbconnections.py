@@ -33,4 +33,4 @@ def insert_into_db(query):
             cnx.close()
 
 def make_insert_query(drive, filename, location, taken):
-    return f'''INSERT INTO files ({drive}, {filename}, {location}, {taken})'''
+    return f'''INSERT INTO files (drive, filename,  location, taken ) VALUES ('{drive}', '{filename}', '{location}', '{taken}');'''
