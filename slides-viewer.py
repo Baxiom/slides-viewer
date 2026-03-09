@@ -6,7 +6,7 @@ import tkinter as tk
 from pygame import freetype, SurfaceType
 from geopy.geocoders import Nominatim
 # from PIL.ExifTags import GPSTAGS
-from dbconnections import insert_into_db
+from dbconnections import insert_into_db, make_insert_query
 
 win = tk.Tk()
 win.withdraw()
@@ -98,6 +98,12 @@ def get_data(fullpath):
 
 def sort_analyse(folder, image_name):
     files = os.listdir(folder)
+    #The disk name - need to get the second occurrence.
+    disk_end = folder.find('/', 1)
+    disk_end = folder.find('/', disk_end + 1)
+    print(f'disk_end = {disk_end}')
+    disk = folder[0:disk_end+1]
+    disk.strip()
     image_names_dates = []
     for file in files:
         if os.path.splitext(file)[1].lower() in image_extensions:
@@ -105,6 +111,7 @@ def sort_analyse(folder, image_name):
             if os.path.isfile(fullpath):
                 date, lat, lat_ref, lon, lon_ref = get_data(fullpath)
                 image_names_dates.append((fullpath, date, lat, lat_ref, lon, lon_ref))
+                insert_into_db(make_insert_query(disk, fullpath, 'none', date))
     image_names_dates.sort(key=lambda x: x[1])
     # print(f'sorted files[:10]: {image_names_dates[:5]}')
     image_names = [c[0] for c in image_names_dates]
@@ -199,6 +206,7 @@ def main():
                     running = False
                 elif event.unicode == 'l':
                     image_name, image, folder = select_image()
+                    print(f'folder= {folder}')
                     file_list, index = sort_analyse(folder, image_name)
                     paused = False
                     reset_advance_timer()
