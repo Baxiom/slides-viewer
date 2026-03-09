@@ -6,6 +6,7 @@ import tkinter as tk
 from pygame import freetype, SurfaceType
 from geopy.geocoders import Nominatim
 # from PIL.ExifTags import GPSTAGS
+from dbconnections import insert_into_db
 
 win = tk.Tk()
 win.withdraw()
